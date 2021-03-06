@@ -20,8 +20,16 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
                            "月曜日7限","火曜日7限","水曜日7限","木曜日7限","金曜日7限","土曜日7限"]
     var CellTitle:String = ""
     var GiveTappedCellIndex:Int = 0
-    var receiveInfo:[String] = ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""]
+    
+    var receiveSubjectInfo:[String] = ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""]
+    var receiveTeachersInfo:[String] = ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""]
+    var receiveClassroomInfo:[String] = ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""]
+    var receiveCreditInfo:[String] = ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""]
+    
     var ownScheduleSubjectTitle = UserDefaults.standard
+    var ownScheduleTeacherName = UserDefaults.standard
+    var ownScheduleClassroom = UserDefaults.standard
+    var ownScheduleCredit = UserDefaults.standard
 
     @IBOutlet weak var ScheduleCollectionView: UICollectionView!
     
@@ -46,7 +54,10 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
     
     override func viewDidLoad() {
             super.viewDidLoad()
-            // Do any additional setup after loading the view.
+        
+            setupViews()
+    }
+    func setupViews(){
         navigationItem.title = "時間割"
         navigationController?.navigationBar.titleTextAttributes = [.foregroundColor:UIColor.white]
         
@@ -64,7 +75,6 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
         fridayLabel.layer.borderColor = UIColor.white.cgColor
         saturdayLabel.layer.borderWidth = 1
         saturdayLabel.layer.borderColor = UIColor.white.cgColor
-        
         firstLabel.layer.borderWidth = 1
         firstLabel.layer.borderColor = UIColor.white.cgColor
         secondLabel.layer.borderWidth = 1
@@ -80,34 +90,54 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
         seventhLabel.layer.borderWidth = 1
         seventhLabel.layer.borderColor = UIColor.white.cgColor
         
+        
         ScheduleCollectionView.delegate = self
         ScheduleCollectionView.dataSource = self
-        
-        }
+    }
 
     override func viewWillAppear(_ animated: Bool) {
            super.viewWillAppear(animated)
-        self.navigationController!.navigationBar.setBackgroundImage(UIImage(), for: .default)
+            self.navigationController!.navigationBar.setBackgroundImage(UIImage(), for: .default)
             self.navigationController!.navigationBar.shadowImage = UIImage()
         
         if let defaltInfo = ownScheduleSubjectTitle.stringArray(forKey: "Subject") {
-            receiveInfo = defaltInfo
+            receiveSubjectInfo = defaltInfo
+            print(receiveSubjectInfo)
             ScheduleCollectionView.reloadData()
+            if let defaltInfo = ownScheduleTeacherName.stringArray(forKey: "Teacher") {
+                          receiveTeachersInfo = defaltInfo
+                        ScheduleCollectionView.reloadData()
+                if let defaltInfo = ownScheduleClassroom.stringArray(forKey: "Classroom") {
+                      receiveClassroomInfo = defaltInfo
+                    if let defaltInfo = ownScheduleCredit.stringArray(forKey: "Credit") {
+                          receiveCreditInfo = defaltInfo
+                        return
+                    }else {receiveCreditInfo = ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""]
+                    }
+                    return
+                }else {receiveClassroomInfo = ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""]
+                }
+                        return
+                    }else {receiveTeachersInfo = ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""]
+                        ScheduleCollectionView.reloadData()
+                    }
             return
-        }else {receiveInfo = ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""]
+        }else {receiveSubjectInfo = ["","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""]
             ScheduleCollectionView.reloadData()
         }
-        ScheduleCollectionView.reloadData()
-      print(receiveInfo)
-       }
+        
        
+       
+     
+       }
+   
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return 42
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cellid", for: indexPath) as! CollectionViewCell
-        let subject = receiveInfo[indexPath.item]
+        let subject = receiveSubjectInfo[indexPath.row]
             cell.TopViewSubjectTitle.text = subject
         return cell
     }
@@ -118,21 +148,24 @@ class ViewController: UIViewController,UICollectionViewDelegate,UICollectionView
         let nav = UINavigationController(rootViewController: textFieldViewController)
         nav.modalPresentationStyle = .fullScreen
         textFieldViewController.TopVC = self
-        let giveTime = giveTimeName[indexPath.item]
+        let giveTime = giveTimeName[indexPath.row]
         textFieldViewController.receiveTime = giveTime
-        textFieldViewController.receiveTapedCellIndex = indexPath.item
-        textFieldViewController.reReceiveSubject = receiveInfo[indexPath.item]
+        textFieldViewController.receiveTapedCellIndex = indexPath.row
+        textFieldViewController.reReceiveSubject = receiveSubjectInfo[indexPath.row]
+        textFieldViewController.reReceiveTeacherName = receiveTeachersInfo[indexPath.row]
+        
+        textFieldViewController.reReceiveClassroom = receiveClassroomInfo[indexPath.row]
+        textFieldViewController.reReceiveCredit = receiveCreditInfo[indexPath.row]
         self.present(nav ,animated: true, completion: nil)
     }
    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let CellWidth = (collectionView.frame.width - 6) / 6
+        let CellWidth = collectionView.frame.width / 6
         let cellHeight = collectionView.frame.height / 7
         return .init(width :CellWidth,height: cellHeight)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout:UICollectionViewLayout ,minimumInteritemSpacingForSectionAt section :Int) -> CGFloat{
-        
         return 0
     }
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
